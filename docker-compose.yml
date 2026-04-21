@@ -1,0 +1,53 @@
+services:
+  paper-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: trading-paper-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    working_dir: /app
+    command:
+      - python3
+      - bot.py
+      - paper-watch
+      - --symbol
+      - ${BOT_SYMBOL:-ETHUSDT}
+      - --preset
+      - ${BOT_PRESET:-hybrid_1h}
+      - --interval
+      - ${BOT_INTERVAL:-1h}
+      - --quote-order-qty
+      - ${BOT_QUOTE_ORDER_QTY:-50}
+      - --poll-seconds
+      - ${BOT_POLL_SECONDS:-60}
+      - --portfolio-name
+      - ${BOT_PORTFOLIO_NAME:-demo}
+      - --initial-cash
+      - ${BOT_INITIAL_CASH:-1000}
+    volumes:
+      - ./.runtime:/app/.runtime
+      - ./.cache/market_data:/app/.cache/market_data
+
+  backtest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    profiles: ["manual"]
+    working_dir: /app
+    command:
+      - python3
+      - bot.py
+      - backtest
+      - --symbols
+      - ETHUSDT
+      - --preset
+      - hybrid_1h
+      - --start
+      - 2026-01-01
+      - --end
+      - 2026-04-20
+    volumes:
+      - ./.runtime:/app/.runtime
+      - ./.cache/market_data:/app/.cache/market_data
